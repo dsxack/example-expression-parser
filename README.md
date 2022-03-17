@@ -1,6 +1,6 @@
 # example-statement-parser
 
-An statement parser with participle.
+An statement parser with [participle](https://github.com/alecthomas/participle).
 
 ### Install
 
@@ -14,8 +14,11 @@ go get github.com/dsxack/example-statement-parser
 package main
 
 import (
-	"github.com/dsxack/example-statement-parser"
+	"fmt"
 	"log"
+	"reflect"
+
+	"github.com/dsxack/example-statement-parser"
 )
 
 func Example() {
@@ -24,6 +27,26 @@ func Example() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	stringP := func(value string) *string { return &value }
+
+	result := reflect.DeepEqual(stmt, parser.Statement{
+		Fragments: []parser.Fragment{
+			{IfStatement: &parser.IfStatement{
+				Cond: parser.Expr{Left: &parser.Cond{Left: parser.Term{Variable: stringP("insecure")}}},
+				Then: parser.Term{Value: &parser.Value{String: stringP("http")}},
+				Else: parser.Term{Value: &parser.Value{String: stringP("https")}},
+			}},
+			{Literal: stringP("://")},
+			{Variable: stringP("domain")},
+			{Literal: stringP("/")},
+			{Variable: stringP("basepath")},
+		},
+	})
+
+	fmt.Println(result)
+
+	// output: true
 }
 ```
 
